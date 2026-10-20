@@ -16,8 +16,32 @@ class BlackJackJackSimulator:
     def calculateTrueCount(self):
         return round(self.runningCount / self.numDecks)
 
+class Deck:
+    def __init__(self, numDecks):
+        self.cards = []
+        self.numDecks = numDecks
+
+    def buildDeck(self):
+        for _ in range(self.numDecks):
+            for suit in Card.suits:
+                for rank in Card.ranks:
+                    self.cards.append(Card(suit, rank))
+
+    def shuffle(self):
+        random.shuffle(self.cards)
+
+    def draw(self):
+        return self.cards.pop()
+
+    def __len__(self):
+        return len(self.cards)
+
 class Card:
-    def __init__(self, rank):
+    suits = ('Heart', 'Diamonds', 'Clubs', 'Spades')
+    ranks = ('2', '3', '4', '5', '6', '7', '8', '9', '10', 'J', 'Q', 'K', 'A')
+
+    def __init__(self, suit, rank):
+        self.suit = suit
         self.rank = rank
         self.value = self.getValue(rank)
         self.cardHiLoValue = self.getHiLoValue(rank)
@@ -194,9 +218,19 @@ def basicStrategy(playerHand, dealerUpcard, allowDAS, allowDouble):
 
 if __name__ == "__main__":
 
-    firstCard = Card('3')
-    secondCard = Card('3')
-    dealerUpcard = Card('3')
-    playerHand = [firstCard, secondCard]
+    deck = Deck(5)
+    deck.buildDeck()
+    deck.shuffle()
+    playerCard = deck.draw()
+    print(playerCard.suit, playerCard.rank)
+    secondCard = deck.draw()
+    print(secondCard.suit, secondCard.rank)
+    print(len(deck.cards))
 
-    basicStrategy(playerHand, dealerUpcard)
+    # firstCard = Card('3')
+    # secondCard = Card('3')
+    # dealerUpcard = Card('3')
+    # playerHand = [firstCard, secondCard]
+
+    # basicStrategy(playerHand, dealerUpcard)
+
