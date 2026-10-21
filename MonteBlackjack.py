@@ -4,6 +4,7 @@ import numpy as np
 class BlackJackJackSimulator:
     def __init__(self, numDecks, allowDAS, allowDouble):
         self.numDecks = numDecks
+        self.shoe = Shoe(numDecks)
         self.allowDas = allowDAS
         self.allowDouble = allowDouble
         self.runningCount = 0
@@ -16,25 +17,25 @@ class BlackJackJackSimulator:
     def calculateTrueCount(self):
         return round(self.runningCount / self.numDecks)
 
-class Deck:
+class Shoe:
     def __init__(self, numDecks):
-        self.cards = []
+        self.stack = []
         self.numDecks = numDecks
 
     def buildDeck(self):
         for _ in range(self.numDecks):
             for suit in Card.suits:
                 for rank in Card.ranks:
-                    self.cards.append(Card(suit, rank))
+                    self.stack.append(Card(suit, rank))
 
     def shuffle(self):
-        random.shuffle(self.cards)
+        random.shuffle(self.stack)
 
-    def draw(self):
-        return self.cards.pop()
+    def deal(self):
+        return self.stack.pop()
 
     def __len__(self):
-        return len(self.cards)
+        return len(self.stack)
 
 class Card:
     suits = ('Heart', 'Diamonds', 'Clubs', 'Spades')
@@ -90,14 +91,72 @@ class Hand:
         self.value = self.calcalateHandValue()
 
     def calcalateHandValue(self):
-        pass
+        totalHandValue = 0
+        totalAces = 0
 
-    def addCard(self):
-        pass
+        for card in self.cards:
+            totalHandValue += card.value
+            if card.rank == 'A':
+                totalAces += 1
+
+        while totalHandValue > 21 and totalAces > 0:
+            totalHandValue -= 10
+            totalAces -= 1
+
+        return totalHandValue
+
+    def addCard(self, card):
+        self.cards.append(card)
 
 class Player:
-    def __init__(self, bankroll):
+    def __init__(self, bankroll, shoe):
         self.bankroll = bankroll
+        self.hand = Hand()
+        self.betSize = 0
+        self.shoe = shoe
+        self.splitHand = [Hand()]
+
+    def placeBet(self, betAmount):
+        if betAmount > self.bankroll:
+            print("Insufficient funds")
+        else:
+            self.betSize += betAmount
+            self.bankroll -= betAmount
+
+    def hit(self):
+        cardDealt = self.shoe.deal()
+        self.hand.addCard(cardDealt)
+
+    def stand(self):
+        pass
+
+    def double(self):
+        if len(self.hand.cards) != 2:
+            print("Cannot double down")
+        else:
+            self.hit()
+            self.betSize *= 2
+
+    def split(self):
+        firstCard = self.hand.cards[0]
+        secondCard = self.hand.cards[1]
+
+        if len(self.hand.cards) != 2 or (firstCard.rank != secondCard.rank):
+            print("Cannot split")
+        else:
+            otherHand = Hand()
+            otherHand.addCard(self.hand.cards.pop())
+
+            firstCardDealt = self.shoe.deal()
+            self.hand.addCard(firstCardDealt)
+
+            secondCardDealt = self.shoe.deal()
+            otherHand.addCard(secondCardDealt)
+
+            return [self.hand, otherHand]
+
+    def surrender(self):
+        pass
 
 class Payout:
     def __init__(self):
@@ -218,14 +277,34 @@ def basicStrategy(playerHand, dealerUpcard, allowDAS, allowDouble):
 
 if __name__ == "__main__":
 
-    deck = Deck(5)
-    deck.buildDeck()
-    deck.shuffle()
-    playerCard = deck.draw()
-    print(playerCard.suit, playerCard.rank)
-    secondCard = deck.draw()
-    print(secondCard.suit, secondCard.rank)
-    print(len(deck.cards))
+    blackjack = BlackJackJackSimulator(5, True, True)
+
+    shoe = blackjack.shoe
+
+    shoe.buildDeck()
+    shoe.shuffle()
+
+    playerOne = Player(bankroll=1000, shoe=shoe)
+
+    for i in range(2):
+        playerOne.hit()
+
+    playerOne.split()
+
+    # playerOne = Hand()
+
+    # playerOne.addCard(shoe.deal)
+
+    # print(playerOne.cards[0])
+
+    # deck = Shoe(numDecks=6)
+    # deck.buildDeck()
+    # deck.shuffle()
+    # playerCard = deck.draw()
+    # print(playerCard.suit, playerCard.rank, playerCard.cardHiLoValue)
+    # secondCard = deck.draw()
+    # print(secondCard.suit, secondCard.rank, secondCard.cardHiLoValue)
+    # print(len(deck.cards))
 
     # firstCard = Card('3')
     # secondCard = Card('3')
