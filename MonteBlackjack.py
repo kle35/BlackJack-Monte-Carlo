@@ -88,9 +88,9 @@ class Card:
 class Hand:
     def __init__(self):
         self.cards = []
-        self.value = self.calcalateHandValue()
+        self.value = 0
 
-    def calcalateHandValue(self):
+    def calculateHandValue(self):
         totalHandValue = 0
         totalAces = 0
 
@@ -107,56 +107,80 @@ class Hand:
 
     def addCard(self, card):
         self.cards.append(card)
+        self.value = self.calculateHandValue()
+
+# class Player:
+#     def __init__(self, bankroll, shoe):
+#         self.bankroll = bankroll
+#         self.hand = Hand()
+#         self.betSize = 0
+#         self.shoe = shoe
+#         self.splitHand = [Hand()]
+
+#     def placeBet(self, betAmount):
+#         if betAmount > self.bankroll:
+#             print("Insufficient funds")
+#         else:
+#             self.betSize += betAmount
+#             self.bankroll -= betAmount
+
+#     def hit(self):
+#         cardDealt = self.shoe.deal()
+#         self.hand.addCard(cardDealt)
+
+#     def stand(self):
+#         pass
+
+#     def double(self):
+#         if len(self.hand.cards) != 2:
+#             print("Cannot double down")
+#         else:
+#             self.hit()
+#             self.betSize *= 2
+
+#     def split(self):
+#         firstCard = self.hand.cards[0]
+#         secondCard = self.hand.cards[1]
+
+#         if len(self.hand.cards) != 2 or (firstCard.rank != secondCard.rank):
+#             print("Cannot split")
+#         else:
+#             otherHand = Hand()
+#             otherHand.addCard(self.hand.cards.pop())
+
+#             firstCardDealt = self.shoe.deal()
+#             self.hand.addCard(firstCardDealt)
+
+#             secondCardDealt = self.shoe.deal()
+#             otherHand.addCard(secondCardDealt)
+
+#             return [self.hand, otherHand]
+
+#     def surrender(self):
+#         pass
 
 class Player:
     def __init__(self, bankroll, shoe):
         self.bankroll = bankroll
-        self.hand = Hand()
+        self.hands = [Hand()]
         self.betSize = 0
         self.shoe = shoe
-        self.splitHand = [Hand()]
-
-    def placeBet(self, betAmount):
-        if betAmount > self.bankroll:
-            print("Insufficient funds")
-        else:
-            self.betSize += betAmount
-            self.bankroll -= betAmount
 
     def hit(self):
         cardDealt = self.shoe.deal()
-        self.hand.addCard(cardDealt)
+        self.hands[0].addCard(cardDealt)
 
-    def stand(self):
-        pass
+    def split(self, handIndex = 0):
+        newHand = Hand()
+        newHand.addCard(self.hands[handIndex].cards.pop())
 
-    def double(self):
-        if len(self.hand.cards) != 2:
-            print("Cannot double down")
-        else:
-            self.hit()
-            self.betSize *= 2
+        newCardFirst = self.shoe.deal()
+        newCardSecond = self.shoe.deal()
 
-    def split(self):
-        firstCard = self.hand.cards[0]
-        secondCard = self.hand.cards[1]
+        self.hands[handIndex].addCard(newCardFirst)
+        newHand.addCard(newCardSecond)
 
-        if len(self.hand.cards) != 2 or (firstCard.rank != secondCard.rank):
-            print("Cannot split")
-        else:
-            otherHand = Hand()
-            otherHand.addCard(self.hand.cards.pop())
-
-            firstCardDealt = self.shoe.deal()
-            self.hand.addCard(firstCardDealt)
-
-            secondCardDealt = self.shoe.deal()
-            otherHand.addCard(secondCardDealt)
-
-            return [self.hand, otherHand]
-
-    def surrender(self):
-        pass
+        self.hands.append(newHand)
 
 class Payout:
     def __init__(self):
@@ -289,27 +313,15 @@ if __name__ == "__main__":
     for i in range(2):
         playerOne.hit()
 
+    print(playerOne.hands[0].cards[0].rank, playerOne.hands[0].cards[1].rank)
+
     playerOne.split()
 
-    # playerOne = Hand()
+    print("First Split: " + playerOne.hands[0].cards[0].rank, playerOne.hands[0].cards[1].rank)
+    print("Second Split: " + playerOne.hands[1].cards[0].rank, playerOne.hands[1].cards[1].rank)
 
-    # playerOne.addCard(shoe.deal)
+    playerOne.split()
 
-    # print(playerOne.cards[0])
-
-    # deck = Shoe(numDecks=6)
-    # deck.buildDeck()
-    # deck.shuffle()
-    # playerCard = deck.draw()
-    # print(playerCard.suit, playerCard.rank, playerCard.cardHiLoValue)
-    # secondCard = deck.draw()
-    # print(secondCard.suit, secondCard.rank, secondCard.cardHiLoValue)
-    # print(len(deck.cards))
-
-    # firstCard = Card('3')
-    # secondCard = Card('3')
-    # dealerUpcard = Card('3')
-    # playerHand = [firstCard, secondCard]
-
-    # basicStrategy(playerHand, dealerUpcard)
-
+    print(playerOne.hands[0].cards[0].rank, playerOne.hands[0].cards[1].rank)
+    print(playerOne.hands[1].cards[0].rank, playerOne.hands[1].cards[1].rank)
+    print(playerOne.hands[2].cards[0].rank, playerOne.hands[2].cards[1].rank)
