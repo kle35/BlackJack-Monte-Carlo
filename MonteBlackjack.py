@@ -109,78 +109,74 @@ class Hand:
         self.cards.append(card)
         self.value = self.calculateHandValue()
 
-# class Player:
-#     def __init__(self, bankroll, shoe):
-#         self.bankroll = bankroll
-#         self.hand = Hand()
-#         self.betSize = 0
-#         self.shoe = shoe
-#         self.splitHand = [Hand()]
-
-#     def placeBet(self, betAmount):
-#         if betAmount > self.bankroll:
-#             print("Insufficient funds")
-#         else:
-#             self.betSize += betAmount
-#             self.bankroll -= betAmount
-
-#     def hit(self):
-#         cardDealt = self.shoe.deal()
-#         self.hand.addCard(cardDealt)
-
-#     def stand(self):
-#         pass
-
-#     def double(self):
-#         if len(self.hand.cards) != 2:
-#             print("Cannot double down")
-#         else:
-#             self.hit()
-#             self.betSize *= 2
-
-#     def split(self):
-#         firstCard = self.hand.cards[0]
-#         secondCard = self.hand.cards[1]
-
-#         if len(self.hand.cards) != 2 or (firstCard.rank != secondCard.rank):
-#             print("Cannot split")
-#         else:
-#             otherHand = Hand()
-#             otherHand.addCard(self.hand.cards.pop())
-
-#             firstCardDealt = self.shoe.deal()
-#             self.hand.addCard(firstCardDealt)
-
-#             secondCardDealt = self.shoe.deal()
-#             otherHand.addCard(secondCardDealt)
-
-#             return [self.hand, otherHand]
-
-#     def surrender(self):
-#         pass
-
 class Player:
     def __init__(self, bankroll, shoe):
         self.bankroll = bankroll
         self.hands = [Hand()]
+        self.handIndex = 0
         self.betSize = 0
         self.shoe = shoe
 
+    def placeBet(self, betAmount):
+        if betAmount > self.bankroll:
+            print("Insufficient funds")
+        else:
+            self.betSize += betAmount
+            self.bankroll -= betAmount
+
+    def stand(self):
+        self.handIndex += 1
+    
+    def double(self):
+        if len(self.hands[self.handIndex].cards) != 2:
+            print("Cannot double down")
+        else:
+            self.hit()
+            self.betSize *= 2
+
     def hit(self):
         cardDealt = self.shoe.deal()
-        self.hands[0].addCard(cardDealt)
+        self.hands[self.handIndex].addCard(cardDealt)
 
-    def split(self, handIndex = 0):
+    def split(self):
         newHand = Hand()
-        newHand.addCard(self.hands[handIndex].cards.pop())
+        newHand.addCard(self.hands[self.handIndex].cards.pop())
 
         newCardFirst = self.shoe.deal()
         newCardSecond = self.shoe.deal()
 
-        self.hands[handIndex].addCard(newCardFirst)
+        self.hands[self.handIndex].addCard(newCardFirst)
         newHand.addCard(newCardSecond)
 
         self.hands.append(newHand)
+
+    def surrender(self):
+        self.handIndex += 1
+
+    def isTwentyOne(self, hand):
+        return self.hands[hand].value == 21 and len(self.hands[hand].cards) == 2
+
+    def isBlackjack(self, hand):
+        return self.hands[hand].value == 21 and len(self.hands[hand].cards) == 2
+
+    def isBust(self, hand):
+        return self.hands[hand].value > 21
+
+    def checkHandStatus(self):
+        handIndex = self.handIndex
+        bustStatus = self.isBust(self.hands[handIndex])
+        blackjackStatus = self.isBlackjack(self.hands[handIndex])
+        twentyOneStatus = self.isTwentyOne(self.hands[handIndex])
+
+        if (bustStatus):
+            print("Bust")
+            self.handIndex += 1
+        elif (blackjackStatus):
+            print("Blackjack!")
+            self.handIndex += 1
+        elif (twentyOneStatus):
+            print("21")
+            self.handIndex += 1
 
 class Payout:
     def __init__(self):
@@ -313,15 +309,31 @@ if __name__ == "__main__":
     for i in range(2):
         playerOne.hit()
 
-    print(playerOne.hands[0].cards[0].rank, playerOne.hands[0].cards[1].rank)
-
+    print("Initial Hand: " + playerOne.hands[0].cards[0].rank, playerOne.hands[0].cards[1].rank)
+    print("At hand: " + str(playerOne.handIndex))
+    
     playerOne.split()
 
+    print("At hand after split: " + str(playerOne.handIndex))
     print("First Split: " + playerOne.hands[0].cards[0].rank, playerOne.hands[0].cards[1].rank)
     print("Second Split: " + playerOne.hands[1].cards[0].rank, playerOne.hands[1].cards[1].rank)
 
-    playerOne.split()
+    playerOne.stand()
+    print("At hand: " + str(playerOne.handIndex))
+    print()
 
-    print(playerOne.hands[0].cards[0].rank, playerOne.hands[0].cards[1].rank)
-    print(playerOne.hands[1].cards[0].rank, playerOne.hands[1].cards[1].rank)
-    print(playerOne.hands[2].cards[0].rank, playerOne.hands[2].cards[1].rank)
+    playerOne.split()
+    print("First Split: " + playerOne.hands[1].cards[0].rank, playerOne.hands[1].cards[1].rank)
+    print("Second Split: " + playerOne.hands[2].cards[0].rank, playerOne.hands[2].cards[1].rank)
+
+    playerOne.stand()
+
+    playerOne.split()
+    print("First Split: " + playerOne.hands[playerOne.handIndex].cards[0].rank, playerOne.hands[1].cards[1].rank)
+    print("Second Split: " + playerOne.hands[2].cards[0].rank, playerOne.hands[2].cards[1].rank)
+
+    # playerOne.split()
+
+    # print(playerOne.hands[0].cards[0].rank, playerOne.hands[0].cards[1].rank)
+    # print(playerOne.hands[1].cards[0].rank, playerOne.hands[1].cards[1].rank)
+    # print(playerOne.hands[2].cards[0].rank, playerOne.hands[2].cards[1].rank)
